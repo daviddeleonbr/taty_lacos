@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createStyle, listStyles, resetStyles } from "@/lib/encomenda-styles";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
+
+function invalidate() {
+  revalidatePath("/encomenda");
+  revalidatePath("/admin/modelos");
+}
 
 export async function GET() {
   const styles = await listStyles();
@@ -24,6 +30,7 @@ export async function POST(request: Request) {
       image: body.image,
       id: body.id,
     });
+    invalidate();
     return NextResponse.json({ style }, { status: 201 });
   } catch (err) {
     console.error("[POST /api/encomenda-styles]", err);
@@ -36,5 +43,6 @@ export async function POST(request: Request) {
 
 export async function DELETE() {
   const styles = await resetStyles();
+  invalidate();
   return NextResponse.json({ styles });
 }

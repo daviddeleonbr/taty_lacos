@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { createOrder, listOrders } from "@/lib/orders";
 
 export const dynamic = "force-dynamic";
@@ -46,6 +47,7 @@ export async function POST(request: Request) {
       internalNotes: body.internalNotes,
     });
 
+    revalidatePath("/admin/pedidos");
     return NextResponse.json({ order }, { status: 201 });
   } catch (err) {
     console.error("[POST /api/orders]", err);

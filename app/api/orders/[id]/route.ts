@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { deleteOrder, getOrder, updateOrder } from "@/lib/orders";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +25,9 @@ export async function PATCH(
     if (!order) {
       return NextResponse.json({ error: "Pedido não encontrado." }, { status: 404 });
     }
+    revalidatePath(`/pedido/${params.id}`);
+    revalidatePath("/admin/pedidos");
+    revalidatePath(`/admin/pedidos/${params.id}`);
     return NextResponse.json({ order });
   } catch (err) {
     console.error("[PATCH /api/orders/:id]", err);
@@ -42,5 +46,6 @@ export async function DELETE(
   if (!ok) {
     return NextResponse.json({ error: "Pedido não encontrado." }, { status: 404 });
   }
+  revalidatePath("/admin/pedidos");
   return NextResponse.json({ ok: true });
 }

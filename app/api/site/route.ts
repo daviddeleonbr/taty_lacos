@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getSiteContent, saveSiteContent, type SiteContent } from "@/lib/site-content";
 
 export const dynamic = "force-dynamic";
-
-// Bigger payload because of inline data URLs for images
 export const maxDuration = 30;
 
 export async function GET() {
@@ -26,6 +25,11 @@ export async function PUT(request: Request) {
     };
 
     const saved = await saveSiteContent(next);
+
+    // Invalida o cache da home (e do admin que mostra preview)
+    revalidatePath("/");
+    revalidatePath("/admin/conteudo");
+
     return NextResponse.json({ content: saved });
   } catch (err) {
     console.error("[PUT /api/site]", err);

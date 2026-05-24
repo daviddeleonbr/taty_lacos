@@ -41,24 +41,39 @@ function slug(label: string) {
 /**
  * Lista os modelos. Se a tabela estiver vazia (primeiro deploy),
  * faz seed com os defaults do código e retorna eles.
+ *
+ * Read-path resiliente: qualquer erro de configuração cai nos
+ * defaults — o formulário de encomenda nunca quebra.
  */
 export async function listStyles(): Promise<EncomendaStyle[]> {
-  const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from(TABLE)
-    .select("*")
-    .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: true });
+  try {
+    const supabase = getSupabase();
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select("*")
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true });
 
-  if (error) throw new Error(`listStyles: ${error.message}`);
+    if (error) {
+      console.error("[listStyles] query:", error);
+      return DEFAULT_STYLES;
+    }
 
-  if (!data || data.length === 0) {
-    // Seed lazy: na primeira leitura, popula com os defaults
-    await seedDefaults();
+    if (!data || data.length === 0) {
+      // Seed lazy: na primeira leitura, popula com os defaults
+      try {
+        await seedDefaults();
+      } catch (err) {
+        console.error("[listStyles] seed:", err);
+      }
+      return DEFAULT_STYLES;
+    }
+
+    return (data as StyleRow[]).map(rowToStyle);
+  } catch (err) {
+    console.error("[listStyles] config:", err);
     return DEFAULT_STYLES;
   }
-
-  return (data as StyleRow[]).map(rowToStyle);
 }
 
 async function seedDefaults() {

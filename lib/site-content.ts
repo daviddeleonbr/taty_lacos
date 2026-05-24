@@ -46,22 +46,29 @@ function mergeWithDefaults(partial: Partial<SiteContent>): SiteContent {
 }
 
 export async function getSiteContent(): Promise<SiteContent> {
-  const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from(TABLE)
-    .select("content")
-    .eq("id", ROW_ID)
-    .maybeSingle();
+  // Read-path resiliente: qualquer erro de configuração ou banco
+  // cai nos defaults — a home nunca quebra por causa do CMS.
+  try {
+    const supabase = getSupabase();
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select("content")
+      .eq("id", ROW_ID)
+      .maybeSingle();
 
-  if (error) {
-    console.error("[getSiteContent]", error);
+    if (error) {
+      console.error("[getSiteContent] query:", error);
+      return DEFAULT_CONTENT;
+    }
+    if (!data) {
+      // Linha ainda não existe — devolve defaults sem persistir nada
+      return DEFAULT_CONTENT;
+    }
+    return mergeWithDefaults((data.content ?? {}) as Partial<SiteContent>);
+  } catch (err) {
+    console.error("[getSiteContent] config:", err);
     return DEFAULT_CONTENT;
   }
-  if (!data) {
-    // Linha ainda não existe — devolve defaults sem persistir nada
-    return DEFAULT_CONTENT;
-  }
-  return mergeWithDefaults((data.content ?? {}) as Partial<SiteContent>);
 }
 
 export async function saveSiteContent(content: SiteContent) {

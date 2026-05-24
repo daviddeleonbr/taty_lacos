@@ -14,8 +14,8 @@ import {
   COLOR_SWATCHES,
   MATERIAL_OPTIONS,
   OCCASION_OPTIONS,
-  STYLE_REFERENCES,
 } from "@/lib/encomenda-options";
+import type { EncomendaStyle } from "@/lib/encomenda-styles.types";
 
 const STEPS: Step[] = [
   { key: "style", label: "Estilo" },
@@ -54,7 +54,11 @@ const INITIAL: FormState = {
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-export function EncomendaForm() {
+export function EncomendaForm({
+  styles,
+}: {
+  styles: EncomendaStyle[];
+}) {
   const [step, setStep] = React.useState(0);
   const [state, setState] = React.useState<FormState>(INITIAL);
   const [submitting, setSubmitting] = React.useState(false);
@@ -158,6 +162,7 @@ export function EncomendaForm() {
           >
             {STEPS[step].key === "style" && (
               <StepStyle
+                styles={styles}
                 value={state.styleId}
                 onPick={(id, label) => {
                   setState((s) => ({ ...s, styleId: id, styleLabel: label }));
@@ -265,9 +270,11 @@ export function EncomendaForm() {
 /* ----------------------------- Steps ----------------------------- */
 
 function StepStyle({
+  styles,
   value,
   onPick,
 }: {
+  styles: EncomendaStyle[];
   value?: string;
   onPick: (id: string, label: string) => void;
 }) {
@@ -278,7 +285,7 @@ function StepStyle({
       hint="Pode ser uma referência só para começarmos a conversa."
     >
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-        {STYLE_REFERENCES.map((r) => {
+        {styles.map((r) => {
           const selected = value === r.id;
           return (
             <button

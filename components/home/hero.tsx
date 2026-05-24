@@ -6,11 +6,10 @@ import { motion } from "framer-motion";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SparkleIcon, RibbonIcon } from "@/components/icons/decorative";
-import { heroImage } from "@/lib/mock-data";
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-export function Hero() {
+export function Hero({ heroImage }: { heroImage: string }) {
   return (
     <section className="relative overflow-hidden pt-8 lg:pt-12">
       <div className="container-boutique">

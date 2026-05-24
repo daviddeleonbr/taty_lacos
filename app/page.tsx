@@ -10,19 +10,29 @@ import { Testimonials } from "@/components/home/testimonials";
 import { CustomerGallery } from "@/components/home/customer-gallery";
 import { CustomOrdersCTA } from "@/components/home/custom-orders";
 import { Newsletter } from "@/components/home/newsletter";
+import { getSiteContent } from "@/lib/site-content";
 
-export default function HomePage() {
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const content = await getSiteContent();
+
   return (
     <>
       <Header />
       <main className="grain">
-        <Hero />
+        <Hero heroImage={content.hero.image} />
         <HowItWorks />
-        <FeaturedProducts />
-        <EmotionalBanner />
-        <Categories />
+        <FeaturedProducts products={content.featuredProducts} />
+        <EmotionalBanner
+          bannerImage={content.banner.image}
+          bannerCaption={content.banner.caption}
+          founderImage={content.founder.image}
+          founderQuote={content.founder.quote}
+        />
+        <Categories categories={content.categories} />
         <Testimonials />
-        <CustomerGallery />
+        <CustomerGallery images={content.galleryImages} />
         <CustomOrdersCTA />
         <Newsletter />
       </main>

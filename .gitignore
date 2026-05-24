@@ -35,6 +35,14 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# local data store (substituir por DB real em produção)
+# local data store (legado — antes da migração para Supabase)
 /data
+
+# Supabase CLI — arquivos locais que não devem ser commitados
+supabase/.branches
+supabase/.temp
+supabase/.env
+supabase/seed.sql
+**/.supabase
+lib/database.types.ts
 

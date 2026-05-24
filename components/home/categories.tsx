@@ -4,11 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
-import { categories } from "@/lib/mock-data";
+import type { Category } from "@/lib/mock-data";
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-export function Categories() {
+export function Categories({ categories }: { categories: Category[] }) {
   return (
     <section id="datas" className="relative py-24 lg:py-32 bg-cream-100">
       <div className="container-boutique">

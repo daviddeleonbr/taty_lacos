@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, ExternalLink, Plus } from "lucide-react";
+import { ArrowRight, ExternalLink } from "lucide-react";
 import { listOrders } from "@/lib/orders";
 import { currentStageLabel, progressFromStages } from "@/lib/order-types";
-import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
@@ -11,23 +10,15 @@ export default async function AdminPedidosPage() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
-        <div>
-          <p className="text-[11px] uppercase tracking-[0.18em] text-champagne-600 font-medium">
-            Painel
-          </p>
-          <h1 className="mt-2 font-serif text-3xl text-ink-600">Pedidos</h1>
-          <p className="mt-2 text-sm text-ink-500/80 max-w-md">
-            Aqui você acompanha todas as encomendas. Clique em um pedido para
-            atualizar etapas, adicionar fotos do processo e notas para a cliente.
-          </p>
-        </div>
-        <Link href="/admin/novo">
-          <Button variant="primary" size="md">
-            <Plus className="h-4 w-4" strokeWidth={2} />
-            Novo pedido
-          </Button>
-        </Link>
+      <header className="mb-10">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-champagne-600 font-medium">
+          Painel
+        </p>
+        <h1 className="mt-2 font-serif text-3xl text-ink-600">Pedidos</h1>
+        <p className="mt-2 text-sm text-ink-500/80 max-w-md">
+          Aqui você acompanha todas as encomendas. Clique em um pedido para
+          atualizar etapas, adicionar fotos do processo e notas para a cliente.
+        </p>
       </header>
 
       {orders.length === 0 ? (
@@ -176,15 +167,16 @@ function EmptyState() {
         Nenhum pedido ainda <span className="font-script text-bordeaux-500">por aqui</span>
       </p>
       <p className="mt-3 text-sm text-ink-500/80 max-w-sm mx-auto">
-        Quando uma cliente preencher o formulário em <code className="text-bordeaux-500">/encomenda</code>,
-        o pedido aparece aqui. Você também pode criar manualmente.
+        Quando uma cliente preencher o formulário em{" "}
+        <Link
+          href="/encomenda"
+          target="_blank"
+          className="text-bordeaux-500 hover:underline"
+        >
+          /encomenda
+        </Link>
+        , o pedido aparece aqui.
       </p>
-      <Link href="/admin/novo" className="mt-7 inline-block">
-        <Button variant="primary" size="md">
-          <Plus className="h-4 w-4" strokeWidth={2} />
-          Criar pedido manualmente
-        </Button>
-      </Link>
     </div>
   );
 }

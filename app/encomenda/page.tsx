@@ -6,6 +6,9 @@ import { Footer } from "@/components/layout/footer";
 import { WhatsAppFloat } from "@/components/layout/whatsapp-float";
 import { EncomendaForm } from "@/components/encomenda/form";
 import { DividerOrnament, RibbonIcon } from "@/components/icons/decorative";
+import { listStyles } from "@/lib/encomenda-styles";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Encomenda exclusiva",
@@ -13,7 +16,8 @@ export const metadata: Metadata = {
     "Crie uma peça única para a sua filha. Escolha estilo, cores, materiais e acompanhe cada etapa da confecção.",
 };
 
-export default function EncomendaPage() {
+export default async function EncomendaPage() {
+  const styles = await listStyles();
   return (
     <>
       <Header />
@@ -52,7 +56,7 @@ export default function EncomendaPage() {
           <div className="container-boutique">
             <div className="max-w-3xl mx-auto">
               <div className="rounded-[2rem] lg:rounded-[2.5rem] bg-cream-100 border border-blush-100/60 shadow-soft p-7 sm:p-10 lg:p-14">
-                <EncomendaForm />
+                <EncomendaForm styles={styles} />
               </div>
 
               <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-6 text-xs text-ink-400">

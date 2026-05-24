@@ -121,22 +121,20 @@ export function OrderEditor({ initialOrder }: { initialOrder: Order }) {
 
   async function handlePhotoUpload(idx: number, files: FileList | null) {
     if (!files || files.length === 0) return;
-    const readers = Array.from(files).map(
-      (file) =>
-        new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        })
-    );
-    const dataUrls = await Promise.all(readers);
-    setOrder((o) => ({
-      ...o,
-      stages: o.stages.map((s, i) =>
-        i === idx ? { ...s, photos: [...(s.photos ?? []), ...dataUrls] } : s
-      ),
-    }));
+    setError(null);
+    try {
+      const uploads = await Promise.all(
+        Array.from(files).map((file) => uploadProcessPhoto(file, order.id))
+      );
+      setOrder((o) => ({
+        ...o,
+        stages: o.stages.map((s, i) =>
+          i === idx ? { ...s, photos: [...(s.photos ?? []), ...uploads] } : s
+        ),
+      }));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Falha no upload.");
+    }
   }
 
   function removePhoto(idx: number, photoIdx: number) {
@@ -617,6 +615,19 @@ function StatusPill({
       {label}
     </button>
   );
+}
+
+async function uploadProcessPhoto(file: File, orderId: string): Promise<string> {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("prefix", `process/${orderId}`);
+  const res = await fetch("/api/admin/upload", { method: "POST", body: form });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? "Upload falhou.");
+  }
+  const { url } = (await res.json()) as { url: string };
+  return url;
 }
 
 function CopyLink({ url }: { url: string }) {

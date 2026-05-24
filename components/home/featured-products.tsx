@@ -6,12 +6,12 @@ import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { featuredProducts } from "@/lib/mock-data";
+import type { Product } from "@/lib/mock-data";
 import { formatPrice } from "@/lib/utils";
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-export function FeaturedProducts() {
+export function FeaturedProducts({ products }: { products: Product[] }) {
   return (
     <section id="colecao" className="relative py-24 lg:py-32 bg-cream-100">
       <div className="container-boutique">
@@ -35,7 +35,7 @@ export function FeaturedProducts() {
         </div>
 
         <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-          {featuredProducts.map((product, i) => (
+          {products.map((product, i) => (
             <motion.article
               key={product.id}
               initial={{ opacity: 0, y: 28 }}

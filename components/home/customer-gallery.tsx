@@ -3,11 +3,10 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Instagram } from "lucide-react";
-import { galleryImages } from "@/lib/mock-data";
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-export function CustomerGallery() {
+export function CustomerGallery({ images }: { images: string[] }) {
   return (
     <section className="relative py-24 lg:py-32">
       <div className="container-boutique">
@@ -26,7 +25,7 @@ export function CustomerGallery() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 lg:gap-4">
-          {galleryImages.map((src, i) => (
+          {images.map((src, i) => (
             <motion.a
               key={src + i}
               href="#"

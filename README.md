@@ -6,12 +6,61 @@ E-commerce premium de laços infantis artesanais. Site construído com Next.js 1
 
 ## 🚀 Como rodar
 
+### 1. Setup do Supabase (uma vez, via CLI)
+
+O Supabase CLI já vem como devDependency (`npx supabase ...` funciona após `npm install`).
+
+```bash
+# Login no Supabase (abre o navegador)
+npx supabase login
+
+# Vincula este repo ao seu projeto hospedado
+# (project ref aparece em Settings → General → Reference ID)
+npx supabase link --project-ref SEU_PROJECT_REF
+
+# Aplica todas as migrations do diretório supabase/migrations/
+npm run db:push
+```
+
+Pronto — as tabelas `orders`, `site_content` e `encomenda_styles` são criadas com RLS habilitado. A migration vive em [supabase/migrations/20260523000000_init.sql](supabase/migrations/20260523000000_init.sql).
+
+**Storage** (criar manualmente no dashboard — o CLI não cria buckets em projetos hospedados):
+
+Vá em **Storage → New bucket**:
+- Name: `lacos`
+- Public bucket: **ON**
+- File size limit: `5 MB`
+- Allowed MIME types: `image/*`
+
+Em **Settings → API**, copie:
+- **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
+- **service_role** key (NÃO a anon key) → `SUPABASE_SERVICE_ROLE_KEY`
+
+### 2. Variáveis de ambiente
+
+```bash
+cp .env.example .env.local
+# edite .env.local com os valores reais
+```
+
+Mínimo necessário:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOi...
+SUPABASE_STORAGE_BUCKET=lacos
+ADMIN_PASSWORD=sua-senha-do-atelie
+ADMIN_SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))")
+```
+
+### 3. Rodar
+
 ```bash
 npm install
 npm run dev
 ```
 
-Abra [http://localhost:3000](http://localhost:3000).
+Abra [http://localhost:3000](http://localhost:3000) (loja) ou [http://localhost:3000/admin/login](http://localhost:3000/admin/login) (admin).
 
 ---
 
@@ -132,11 +181,11 @@ Página privada (no-index) onde a cliente acompanha:
 
 Componentes: [components/pedido/timeline.tsx](components/pedido/timeline.tsx).
 
-### 3. Admin → `/admin/pedidos`
-Painel para a Bruna gerenciar a esteira:
+### 3. Admin → `/admin`
+Painel para a Bruna gerenciar a esteira **e** o conteúdo do site, sem precisar acionar programador:
 
+#### Pedidos
 - **`/admin/pedidos`** — lista de todos os pedidos com status, progresso e links rápidos
-- **`/admin/novo`** — criar pedido manualmente (quando a venda fecha por WhatsApp/Instagram)
 - **`/admin/pedidos/[id]`** — editor completo onde dá para:
   - Avançar etapas (botão "Avançar para próxima etapa" promove a current para completed e ativa a próxima)
   - Editar título e descrição de cada etapa
@@ -146,15 +195,100 @@ Painel para a Bruna gerenciar a esteira:
   - Copiar link de acompanhamento da cliente
   - Excluir pedido
 
-### Persistência
+#### Conteúdo do site (`/admin/conteudo`)
+A Bruna troca imagens e textos da home **sem precisar de programador**. Editáveis:
 
-Os pedidos ficam em **`data/orders.json`** (ignorado pelo git). Funciona em dev e em qualquer host Node persistente.
+- **Hero** (foto principal)
+- **Banner emocional** (foto widescreen + legenda em script)
+- **Fundadora** (foto + citação)
+- **Produtos em destaque** — 6 cards na home: foto, nome, coleção, cor, preço, preço antigo, disponibilidade, badge. Adicionar/remover livremente
+- **Categorias** — cards verticais com imagem, nome, descrição, link, reordenáveis
+- **Galeria #nossasprincesinhas** — grid com upload em massa e reordenação por foto
 
-⚠️ **Não vai para Vercel sem ajuste** — o filesystem da Vercel é read-only entre requisições. Antes do deploy, troque [lib/orders.ts](lib/orders.ts) por Supabase mantendo a mesma assinatura (`listOrders`, `getOrder`, `createOrder`, `updateOrder`, `deleteOrder`). As API routes e a UI não precisam mudar.
+Cada slot de imagem aceita **upload direto do dispositivo** (vai para Supabase Storage, salva só a URL) **ou colar URL externa** (qualquer host HTTPS). Tem botão "Restaurar padrão" para reverter ao seed do projeto. Salvar publica imediatamente (`PUT /api/site`).
 
-⚠️ **Admin sem autenticação** — `/admin/*` está aberto. Antes de publicar:
-- Adicionar middleware com NextAuth/Clerk/Supabase Auth
-- Restringir acesso aos emails autorizados
+#### Modelos de encomenda (`/admin/modelos`)
+CRUD completo dos modelos que aparecem na **primeira etapa do formulário** de encomenda em `/encomenda`. Adicionar, editar (foto, nome, descrição), remover, restaurar lista padrão. As mudanças refletem na hora no formulário público.
+
+Componentes: [components/admin/content-editor.tsx](components/admin/content-editor.tsx), [components/admin/styles-editor.tsx](components/admin/styles-editor.tsx), [components/admin/image-picker.tsx](components/admin/image-picker.tsx) (reutilizável).
+
+### Persistência — Supabase
+
+Todo o estado vai para o Postgres do Supabase, com fotos em Storage:
+
+| Onde | O que guarda |
+| ---- | ------------ |
+| `public.orders` | Pedidos completos. JSON aninhado (cliente, peça, etapas) em colunas tipadas. `stages` como `JSONB`. |
+| `public.site_content` | Conteúdo da home — uma linha só (`id = 1`) com tudo em `JSONB`. |
+| `public.encomenda_styles` | Um row por modelo do formulário de encomenda. |
+| Storage `lacos/` | Fotos (hero, banner, fundadora, galeria, produtos, categorias, modelos, **process/{order-id}/...** para fotos do processo). |
+
+**Segurança:**
+- RLS habilitado em todas as tabelas, **sem policies permissivas** — nenhum cliente (anon ou authenticated) pode acessar.
+- O servidor usa `service_role` (configurado em `SUPABASE_SERVICE_ROLE_KEY`) que bypassa RLS.
+- Storage bucket é **público para leitura** (URLs funcionam em `<img>` sem signed URLs) e **escrita só pelo servidor** via service_role.
+
+**Camada de acesso** — três módulos com `import "server-only"` que falham no build se algum client tentar importar:
+- [lib/orders.ts](lib/orders.ts) — `listOrders`, `getOrder`, `createOrder`, `updateOrder`, `deleteOrder`
+- [lib/site-content.ts](lib/site-content.ts) — `getSiteContent`, `saveSiteContent`, `getDefaultSiteContent`
+- [lib/encomenda-styles.ts](lib/encomenda-styles.ts) — `listStyles`, `createStyle`, `updateStyle`, `deleteStyle`, `resetStyles` (com lazy seed dos defaults na primeira leitura)
+
+**Upload de imagens** — [/api/admin/upload](app/api/admin/upload/route.ts) recebe `FormData` com `file` + `prefix` (hero/banner/founder/gallery/products/categories/styles/process), valida tipo e tamanho (6 MB max), envia para Storage e retorna a URL pública. Componentes que usam:
+- [ImagePicker](components/admin/image-picker.tsx) — todos os slots de imagem do admin
+- Galeria de fotos do processo em [OrderEditor](components/admin/order-editor.tsx) — fotos vão para `process/{order-id}/...`
+
+Pronto para deploy na Vercel — não usa mais filesystem.
+
+### 🛠️ Workflow Supabase CLI
+
+O CLI fica instalado como devDependency. Atalhos no `package.json`:
+
+| Script | Equivalente | Para que serve |
+| --- | --- | --- |
+| `npm run db:push` | `supabase db push` | Aplica migrations pendentes no projeto vinculado |
+| `npm run db:pull` | `supabase db pull` | Importa schema atual do remoto para uma nova migration |
+| `npm run db:diff` | `supabase db diff -f nome` | Gera arquivo de migration com as mudanças (precisa Docker para local diff) |
+| `npm run db:reset` | `supabase db reset` | **Destrói** dados locais e re-aplica migrations |
+| `npm run db:types` | `supabase gen types typescript --linked` | Gera tipos TS do schema → `lib/database.types.ts` |
+| `npm run supabase:link` | `supabase link` | Vincula este repo a um projeto Supabase |
+| `npm run supabase:start` | `supabase start` | Sobe stack Supabase local (precisa Docker) |
+| `npm run supabase:status` | `supabase status` | URLs e chaves da stack local |
+
+**Fluxo típico para mudar o schema:**
+
+1. Edite um arquivo SQL em `supabase/migrations/{timestamp}_descricao.sql` (ou crie via `npx supabase migration new descricao`)
+2. Teste no banco local com `npm run db:reset` (precisa Docker)
+3. Aplica no remoto: `npm run db:push`
+4. Regenera tipos TS: `npm run db:types`
+
+**Estrutura:**
+- [supabase/config.toml](supabase/config.toml) — config do CLI (porta local, bucket, etc.)
+- [supabase/migrations/](supabase/migrations/) — migrations versionadas (commitadas no git)
+- `supabase/.branches/`, `supabase/.temp/`, `supabase/.env` — gerados localmente, ignorados pelo git
+
+### 🔐 Autenticação do admin
+
+Implementação simples baseada em **senha única + cookie HMAC** assinado (sem banco de usuários):
+
+- Tela de login em [/admin/login](app/admin/login/page.tsx)
+- Páginas protegidas dentro de `app/admin/(authed)/*` (route group)
+- API de auth em [/api/admin/auth](app/api/admin/auth/route.ts) (POST = login, DELETE = logout)
+- Cookie `lacos_session` httpOnly + secure (em produção), assinado com HMAC-SHA256, válido por 30 dias
+- [middleware.ts](middleware.ts) roda no edge e protege:
+  - Todas as rotas `/admin/*` (exceto `/admin/login`) → redireciona para login com `?next=`
+  - `/api/orders` GET, `/api/orders/[id]/*`, `/api/site/*`, `/api/encomenda-styles/*` → retorna 401
+  - **Exceção**: `POST /api/orders` fica público porque é usado pelo formulário de encomenda da cliente
+
+Configuração via env vars ([.env.example](.env.example)):
+
+```bash
+ADMIN_PASSWORD=...          # senha que a Bruna usa
+ADMIN_SESSION_SECRET=...    # string aleatória para assinar tokens
+```
+
+Sem essas vars o app funciona em dev com a senha `admin` (e imprime warning).
+
+**Para um cenário multi-usuário** (várias artesãs do ateliê), migre para NextAuth/Clerk/Supabase Auth — a estrutura de middleware e route group já está pronta para receber isso.
 
 ### Próximos passos sugeridos
 

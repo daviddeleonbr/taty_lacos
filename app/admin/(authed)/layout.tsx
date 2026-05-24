@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { RibbonIcon } from "@/components/icons/decorative";
 import { AdminNav } from "@/components/admin/nav";
+import { MobileLogoutButton } from "@/components/admin/mobile-logout-button";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -37,7 +38,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           >
             Ver loja pública <ExternalLink className="h-3 w-3" />
           </Link>
-          <p className="mt-3">Modo demo · sem autenticação</p>
         </div>
       </aside>
 
@@ -50,13 +50,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               Admin
             </span>
           </Link>
-          <Link
-            href="/"
-            target="_blank"
-            className="text-xs text-ink-400 hover:text-bordeaux-500"
-          >
-            Ver loja →
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              target="_blank"
+              className="text-xs text-ink-400 hover:text-bordeaux-500"
+            >
+              Ver loja →
+            </Link>
+            <MobileLogoutButton />
+          </div>
         </header>
 
         <main className="flex-1 p-6 lg:p-12">{children}</main>

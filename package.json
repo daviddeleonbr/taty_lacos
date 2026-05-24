@@ -6,31 +6,43 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:push": "supabase db push",
+    "db:pull": "supabase db pull",
+    "db:diff": "supabase db diff -f",
+    "db:reset": "supabase db reset",
+    "db:types": "supabase gen types typescript --linked --schema public > lib/database.types.ts",
+    "supabase:link": "supabase link",
+    "supabase:start": "supabase start",
+    "supabase:stop": "supabase stop",
+    "supabase:status": "supabase status"
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.9.1",
+    "@supabase/supabase-js": "^2.106.1",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^11.11.17",
+    "lucide-react": "^0.468.0",
     "next": "14.2.18",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "framer-motion": "^11.11.17",
-    "lucide-react": "^0.468.0",
-    "clsx": "^2.1.1",
-    "tailwind-merge": "^2.5.5",
-    "class-variance-authority": "^0.7.0",
-    "zustand": "^5.0.2",
     "react-hook-form": "^7.54.0",
+    "server-only": "^0.0.1",
+    "tailwind-merge": "^2.5.5",
     "zod": "^3.24.1",
-    "@hookform/resolvers": "^3.9.1"
+    "zustand": "^5.0.2"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "autoprefixer": "^10.4.20",
-    "postcss": "^8.4.49",
-    "tailwindcss": "^3.4.17",
-    "typescript": "^5.7.2",
     "eslint": "^8.57.1",
-    "eslint-config-next": "14.2.18"
+    "eslint-config-next": "14.2.18",
+    "postcss": "^8.4.49",
+    "supabase": "^2.101.0",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2"
   }
 }

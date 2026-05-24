@@ -2,12 +2,27 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { bannerImage, founderImage } from "@/lib/mock-data";
 import { RibbonIcon } from "@/components/icons/decorative";
 
 const easeOut = [0.16, 1, 0.3, 1] as const;
 
-export function EmotionalBanner() {
+const DEFAULT_QUOTE =
+  "Faço cada laço pensando em qual menininha vai usá-lo pela primeira vez.";
+const DEFAULT_CAPTION = "Pequenos gestos. Memórias eternas.";
+
+export function EmotionalBanner({
+  bannerImage,
+  bannerCaption,
+  founderImage,
+  founderQuote,
+}: {
+  bannerImage: string;
+  bannerCaption?: string;
+  founderImage: string;
+  founderQuote?: string;
+}) {
+  const quote = founderQuote?.trim() || DEFAULT_QUOTE;
+  const caption = bannerCaption?.trim() || DEFAULT_CAPTION;
   return (
     <section className="relative py-24 lg:py-32 overflow-hidden">
       <div className="container-boutique">
@@ -35,8 +50,7 @@ export function EmotionalBanner() {
               <div className="absolute -bottom-6 -right-2 sm:right-4 lg:-right-6 max-w-[260px] px-6 py-5 rounded-2xl bg-cream shadow-soft-lg border border-blush-100/60">
                 <RibbonIcon className="h-5 w-5 text-champagne-500 mb-2" />
                 <p className="font-serif italic text-ink-600 leading-snug">
-                  &ldquo;Faço cada laço pensando em qual menininha vai usá-lo
-                  pela primeira vez.&rdquo;
+                  &ldquo;{quote}&rdquo;
                 </p>
                 <p className="mt-3 text-xs uppercase tracking-[0.18em] text-bordeaux-500">
                   Bruna · fundadora
@@ -105,11 +119,13 @@ export function EmotionalBanner() {
           <div className="container-boutique">
             <div className="max-w-md text-cream">
               <p className="font-script text-4xl lg:text-5xl leading-none">
-                Pequenos gestos.
+                {caption.split(".")[0]}.
               </p>
-              <p className="mt-2 font-serif text-2xl lg:text-3xl italic">
-                Memórias eternas.
-              </p>
+              {caption.split(".")[1]?.trim() && (
+                <p className="mt-2 font-serif text-2xl lg:text-3xl italic">
+                  {caption.split(".").slice(1).join(".").trim()}
+                </p>
+              )}
             </div>
           </div>
         </div>

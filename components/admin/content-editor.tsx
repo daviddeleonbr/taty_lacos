@@ -67,19 +67,19 @@ export function ContentEditor({
 
   return (
     <div className="space-y-8">
-      {/* Sticky save bar */}
-      <div className="sticky top-0 -mx-6 lg:-mx-12 px-6 lg:px-12 py-4 bg-cream-100/85 backdrop-blur-md border-b border-blush-100/60 z-20 flex items-center justify-between gap-4">
-        <div>
-          <p className="font-serif text-lg text-ink-600">
+      {/* Sticky save bar — top-16 no mobile para deixar espaço pro header do admin */}
+      <div className="sticky top-16 lg:top-0 -mx-4 sm:-mx-6 lg:-mx-12 px-4 sm:px-6 lg:px-12 py-3 sm:py-4 bg-cream-100/95 backdrop-blur-md border-b border-blush-100/60 z-20 flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="font-serif text-base sm:text-lg text-ink-600 truncate">
             Conteúdo do site
           </p>
-          <p className="text-xs text-ink-400 mt-0.5">
+          <p className="text-[11px] sm:text-xs text-ink-400 mt-0.5 truncate">
             {dirty
-              ? "Alterações pendentes — clique em salvar para publicar"
+              ? "Alterações pendentes"
               : "Tudo publicado e em dia"}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           <a
             href="/"
             target="_blank"
@@ -100,11 +100,20 @@ export function ContentEditor({
             {(saveState === "idle" || saveState === "error") && (
               <Save className="h-4 w-4" />
             )}
-            {saveState === "saving"
-              ? "Salvando…"
-              : saveState === "saved"
-              ? "Publicado!"
-              : "Salvar e publicar"}
+            <span className="hidden sm:inline">
+              {saveState === "saving"
+                ? "Salvando…"
+                : saveState === "saved"
+                ? "Publicado!"
+                : "Salvar e publicar"}
+            </span>
+            <span className="sm:hidden">
+              {saveState === "saving"
+                ? "Salvando…"
+                : saveState === "saved"
+                ? "Publicado!"
+                : "Salvar"}
+            </span>
           </Button>
         </div>
       </div>

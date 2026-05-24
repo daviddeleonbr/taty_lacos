@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { RibbonIcon } from "@/components/icons/decorative";
 import { AdminNav } from "@/components/admin/nav";
-import { MobileLogoutButton } from "@/components/admin/mobile-logout-button";
+import { MobileShell } from "@/components/admin/mobile-shell";
 
 export const metadata: Metadata = {
   title: "Admin",
@@ -42,27 +42,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile top bar */}
-        <header className="lg:hidden border-b border-blush-100/60 bg-cream px-5 py-4 flex items-center justify-between sticky top-0 z-10">
-          <Link href="/admin/pedidos" className="flex items-center gap-2">
-            <RibbonIcon className="h-5 w-5 text-bordeaux-500" />
-            <span className="font-serif tracking-[0.18em] uppercase text-sm text-ink-600">
-              Admin
-            </span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              target="_blank"
-              className="text-xs text-ink-400 hover:text-bordeaux-500"
-            >
-              Ver loja →
-            </Link>
-            <MobileLogoutButton />
-          </div>
-        </header>
-
-        <main className="flex-1 p-6 lg:p-12">{children}</main>
+        <MobileShell />
+        <main className="flex-1 p-4 sm:p-6 lg:p-12">{children}</main>
       </div>
     </div>
   );
